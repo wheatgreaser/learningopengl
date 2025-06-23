@@ -16,7 +16,7 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
 "void main()\n"
 "{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"   FragColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
 "}\n\0";
 
 int main() {
@@ -45,10 +45,25 @@ int main() {
 	glViewport(0, 0, 800, 600); //lower left part of window coords, size
 
 	float vertices[] = {
-	-0.5f, -0.5f, 0.0f,
-	 0.5f, -0.5f, 0.0f,
-	 0.0f,  0.5f, 0.0f
+	 -0.8f, -0.5f, 0.0f,
+	 -0.5f, 0.5f, 0.0f,
+	 -0.2, -0.5f, 0.0f,
+	 0.1f, 0.5f, 0.0f,
+	 0.4f, -0.5f, 0.0f
 	};
+	unsigned int indices[] = {  // note that we start from 0!
+		0, 1, 2,   // first triangle
+		2, 3, 4    // second triangle
+	};
+
+	unsigned int EBO;
+	glGenBuffers(1, &EBO);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
@@ -77,19 +92,21 @@ int main() {
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
 
-	// ..:: Initialization code (done once (unless your object frequently changes)) :: ..
+	// ..:: Initialization code :: ..
 // 1. bind Vertex Array Object
 	glBindVertexArray(VAO);
-	// 2. copy our vertices array in a buffer for OpenGL to use
+	// 2. copy our vertices array in a vertex buffer for OpenGL to use
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// 3. then set our vertex attributes pointers
+	// 3. copy our index array in a element buffer for OpenGL to use
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	// 4. then set the vertex attributes pointers
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	
 
-	glUseProgram(shaderProgram);
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -100,7 +117,8 @@ int main() {
 
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
